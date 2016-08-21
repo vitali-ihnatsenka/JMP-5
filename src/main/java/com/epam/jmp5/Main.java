@@ -4,6 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +19,7 @@ public class Main {
     private final static String DEAFAULT_CLASSES_PATH = "d://classes/";
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException{
         Path classesPath = Paths.get(DEAFAULT_CLASSES_PATH);
         if(args.length > 0){
             Paths.get(args[0]);
@@ -52,7 +54,23 @@ public class Main {
 
         Path chosenPath =jarPaths.get(userChoice);
 
-        logger.info("You chosen " + chosenPath);
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new URL("file:" + chosenPath.toString())});
+        boolean end = true;
+        do{
+            logger.info("Full class name to load:");
+            String className = System.console().readLine();
+            try {
+                Class c = classLoader.loadClass(className);
+                logger.info(c + " has been loaded");
+            } catch (ClassNotFoundException e) {
+                logger.info(className + " not found");
+            }
+            logger.info("Finish? (y)");
+            String finish = System.console().readLine();
+            if(finish.equalsIgnoreCase("y")){
+                end = false;
+            }
+        }while(end);
     }
 
     private static int getIntInput(int maxValue){
